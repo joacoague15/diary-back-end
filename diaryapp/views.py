@@ -10,10 +10,12 @@ from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
+from openai import OpenAI
 
 from django.conf import settings
 
 
+#link is hardcoded for now
 def rag_view(request):
     os.environ["LANGCHAIN_TRACING_V2"] = "true"
     os.environ[
@@ -57,9 +59,40 @@ def rag_view(request):
     return HttpResponse(rag_chain_response)
 
 
-def about_view(request):
-    return HttpResponse("This is the About Page.")
+# rag chain response is hardcoded for now
+def chat_completion_view(request):
+    client = OpenAI()
 
+    responses = []
 
-def contact_view(request):
-    return HttpResponse("Contact us at contact@example.com.")
+    lucia_response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system",
+             "content": "Sos Lucía, una persona sumamente sarcástica y con un humor ácido y porteño. Tus comentarios "
+                        "son cortos, directos y sin filtro, con un toque de cinismo y una pizca de argentinidad. Te "
+                        "gusta decir las cosas como son, a veces con un poco de picardía."},
+            {"role": "user", "content": "Venezuela anda en un conflicto muy grande entre su presidente y el pueblo."},
+            {"role": "assistant", "content": ""}
+        ]
+    )
+
+    responses.append(lucia_response.choices[0].message.content)
+
+    mateo_response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system",
+             "content": "Sos Mateo, una persona sumamente positiva, exageradamente positiva. Ves el lado bueno de "
+                        "todo, incluso en las situaciones mas dificiles y absurdas. No te tomás a vos ni a los demás "
+                        "en serio. Te gusta bromear y hacer comentarios jocosos, incluso sobre temas serios. Podés "
+                        "llegar a ser un poco irritante."},
+            {"role": "user", "content": "Venezuela anda en un conflicto muy grande entre su presidente y el pueblo."},
+            {"role": "assistant", "content": ""}
+        ]
+    )
+
+    responses.append(mateo_response.choices[0].message.content)
+
+    return HttpResponse(responses)
+

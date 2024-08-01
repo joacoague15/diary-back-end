@@ -2,7 +2,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.rag_view, name='rag'),
-    path('about/', views.about_view, name='about'),
-    path('contact/', views.contact_view, name='contact'),
+    path('rag/', views.rag_view, name='rag'),
+    path('chat-completion/', views.chat_completion_view, name='chat_completion'),
 ]
