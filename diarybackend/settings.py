@@ -1,4 +1,8 @@
 from pathlib import Path
+from decouple import config
+
+OPENAI_API_KEY = config('OPENAI_API_KEY')
+LANGCHAIN_API_KEY = config('LANGCHAIN_API_KEY')
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
