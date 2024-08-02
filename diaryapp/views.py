@@ -42,7 +42,7 @@ def rag_view(request):
 
     try:
         loader = WebBaseLoader(
-            web_paths=("https://www.clarin.com/",),
+            web_paths=(web_path,),
             bs_kwargs=dict(
                 parse_only=bs4.SoupStrainer(
                     name=("p", "h1", "h2", "h3")
