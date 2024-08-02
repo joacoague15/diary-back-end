@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 import bs4
 
 from langchain import hub
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
@@ -147,4 +147,4 @@ def chat_completion_view(request):
     except Exception as e:
         return HttpResponseBadRequest(f'Unexpected error creating completion for Mateo: {str(e)}')
 
-    return HttpResponse(responses)
+    return JsonResponse(responses, safe=False)
