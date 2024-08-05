@@ -120,7 +120,10 @@ def chat_completion_view(request):
             ]
         )
 
-        responses.append(lucia_response.choices[0].message.content)
+        responses.append({
+            "name": "lucia",
+            "message": lucia_response.choices[0].message.content
+        })
     except OpenAIError as e:
         return HttpResponseBadRequest(f'Error creating completion for Lucía: {str(e)}')
     except Exception as e:
@@ -141,7 +144,10 @@ def chat_completion_view(request):
             ]
         )
 
-        responses.append(mateo_response.choices[0].message.content)
+        responses.append({
+            "name": "mateo",
+            "message": mateo_response.choices[0].message.content
+        })
     except OpenAIError as e:
         return HttpResponseBadRequest(f'Error creating completion for Mateo: {str(e)}')
     except Exception as e:
