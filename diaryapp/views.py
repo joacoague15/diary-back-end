@@ -90,8 +90,7 @@ def rag_view(request):
         return HttpResponseBadRequest(f'Error creating RAG chain: {str(e)}')
 
     try:
-        rag_chain_response = rag_chain.invoke("Puedes darme los principales titulos y novedades que aparecen en la "
-                                              "portada de este diario?")
+        rag_chain_response = rag_chain.invoke("Puedes darme la inforamcion principal y datos que encuentres?")
     except Exception as e:
         return HttpResponseBadRequest(f'Error invoking RAG chain: {str(e)}')
 
@@ -110,10 +109,7 @@ def chat_completion_view(request):
             model="gpt-4o-mini",
             messages=[
                 {"role": "system",
-                 "content": "Sos Lucía, una persona sumamente sarcástica y con un humor ácido y porteño. Tus "
-                            "comentarios"
-                            "son cortos, directos y sin filtro, con un toque de cinismo y una pizca de argentinidad. Te"
-                            "gusta decir las cosas como son, a veces con un poco de picardía."},
+                 "content": character_role("lucia")},
                 {"role": "user",
                  "content": news_information},
                 {"role": "assistant", "content": ""}
@@ -134,11 +130,7 @@ def chat_completion_view(request):
             model="gpt-4o-mini",
             messages=[
                 {"role": "system",
-                 "content": "Sos Mateo, una persona sumamente positiva, exageradamente positiva. Ves el lado bueno de "
-                            "todo, incluso en las situaciones mas dificiles y absurdas. No te tomás a vos ni a los "
-                            "demás"
-                            "en serio. Te gusta bromear y hacer comentarios jocosos, incluso sobre temas serios. Podés "
-                            "llegar a ser un poco irritante."},
+                 "content": character_role("mateo")},
                 {"role": "user", "content": news_information},
                 {"role": "assistant", "content": ""}
             ]
@@ -149,8 +141,84 @@ def chat_completion_view(request):
             "message": mateo_response.choices[0].message.content
         })
     except OpenAIError as e:
+        return HttpResponseBadRequest(f'Error creating completion for Mariana: {str(e)}')
+    except Exception as e:
+        return HttpResponseBadRequest(f'Unexpected error creating completion for Mariana: {str(e)}')
+
+    try:
+        mariana_response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system",
+                 "content": character_role("mariana")},
+                {"role": "user", "content": news_information},
+                {"role": "assistant", "content": ""}
+            ]
+        )
+
+        responses.append({
+            "name": "mariana",
+            "message": mariana_response.choices[0].message.content
+        })
+    except OpenAIError as e:
         return HttpResponseBadRequest(f'Error creating completion for Mateo: {str(e)}')
     except Exception as e:
         return HttpResponseBadRequest(f'Unexpected error creating completion for Mateo: {str(e)}')
 
     return JsonResponse(responses, safe=False)
+
+
+def thread_chat_completion_view(request):
+    rag_information = request.GET.get('rag_information')
+    client_message = request.GET.get('client_message')
+    chat_completion_character_name = request.GET.get('chat_completion_character_name')
+
+    client = OpenAI()
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system",
+                 "content": character_role(chat_completion_character_name)},
+                {"role": "user",
+                 "content": rag_information},
+                {"role": "user",
+                 "content": client_message},
+                {"role": "assistant", "content": ""}
+            ]
+        )
+
+    except OpenAIError as e:
+        return HttpResponseBadRequest(f'Error creating completion for Lucía: {str(e)}')
+    except Exception as e:
+        return HttpResponseBadRequest(f'Unexpected error creating completion for Lucía: {str(e)}')
+
+    return JsonResponse({
+        "name": chat_completion_character_name,
+        "message": response.choices[0].message.content
+    })
+
+
+def character_role(name):
+    if name == "lucia":
+        return ("Sos Lucía, una persona sumamente sarcástica y con un humor ácido y porteño. Tus comentarios son "
+                "cortos, directos y sin filtro, con un toque de cinismo y una pizca de argentinidad. Te gusta decir "
+                "las cosas como son, a veces con un poco de picardía. Te expresás de manera breve y concisa, "
+                "como si estuvieras escribiendo un hilo de Twitter.")
+    elif name == "mateo":
+        return ("Sos Mateo, una persona sumamente positiva, exageradamente positiva. Ves el lado bueno de "
+                "todo, incluso en las situaciones mas dificiles y absurdas. No te tomás a vos ni a los "
+                "demás"
+                "en serio. Te gusta bromear y hacer comentarios jocosos, incluso sobre temas serios. Podés "
+                "llegar a ser un poco irritante. Te expresás de manera breve y concisa, como si "
+                "estuvieras escribiendo un hilo de Twitter.")
+    elif name == "mariana":
+        return ("Sos Mariana, una persona extremadamente analítica y racional. Siempre buscas entender y "
+                "explicar las cosas desde una perspectiva lógica y científica. Te gusta profundizar en "
+                "los detalles y encontrar las causas y efectos de cada situación. Tus comentarios son "
+                "precisos, informativos y, a menudo, bastante detallados. No te dejás llevar por las "
+                "emociones y preferís basar tus opiniones en hechos concretos y datos verificables. Podés "
+                "llegar a ser un poco abrumadora por tu necesidad de explicarlo todo al detalle. Te "
+                "expresás de manera breve y concisa, como si"
+                "estuvieras escribiendo un hilo de Twitter.")
