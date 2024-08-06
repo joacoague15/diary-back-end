@@ -200,6 +200,11 @@ def thread_chat_completion_view(request):
     })
 
 
+def character_system_role_view(request):
+    character_name = request.GET.get('character_name')
+    return JsonResponse(character_role(character_name), safe=False)
+
+
 def character_role(name):
     if name == "lucia":
         return ("Sos Lucía, una persona sumamente sarcástica y con un humor ácido y porteño. Tus comentarios son "
