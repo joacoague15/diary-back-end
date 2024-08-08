@@ -176,62 +176,81 @@ def chat_responses_view(request):
 
     responses = []
 
-    try:
-        lucia_response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system",
-                 "content": character_role("lucia")},
-                {"role": "user",
-                 "content": news_information},
-                {"role": "user",
-                 "content": prompt_to_answer},
-                {"role": "assistant", "content": ""}
-            ]
-        )
+    which_characters_respond = define_which_character_to_respond(prompt_to_answer)
 
-        responses.append({
-            "name": "lucia",
-            "message": lucia_response.choices[0].message.content
-        })
-    except OpenAIError as e:
-        return HttpResponseBadRequest(f'Error creating completion for Lucía: {str(e)}')
-    except Exception as e:
-        return HttpResponseBadRequest(f'Unexpected error creating completion for Lucía: {str(e)}')
+    if "lucia" in which_characters_respond.lower():
+        try:
+            lucia_response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system",
+                     "content": character_role("lucia")},
+                    {"role": "user",
+                     "content": news_information},
+                    {"role": "user",
+                     "content": prompt_to_answer},
+                    {"role": "assistant", "content": ""}
+                ]
+            )
+
+            responses.append({
+                "name": "lucia",
+                "message": lucia_response.choices[0].message.content
+            })
+        except OpenAIError as e:
+            return HttpResponseBadRequest(f'Error creating completion for Lucía: {str(e)}')
+        except Exception as e:
+            return HttpResponseBadRequest(f'Unexpected error creating completion for Lucía: {str(e)}')
+
+    if "mateo" in which_characters_respond.lower():
+        try:
+            mateo_response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system",
+                     "content": character_role("mateo")},
+                    {"role": "user",
+                     "content": news_information},
+                    {"role": "user",
+                     "content": prompt_to_answer},
+                    {"role": "assistant", "content": ""}
+                ]
+            )
+
+            responses.append({
+                "name": "mateo",
+                "message": mateo_response.choices[0].message.content
+            })
+        except OpenAIError as e:
+            return HttpResponseBadRequest(f'Error creating completion for Mateo: {str(e)}')
+        except Exception as e:
+            return HttpResponseBadRequest(f'Unexpected error creating completion for Mateo: {str(e)}')
+
+    if "mariana" in which_characters_respond.lower():
+        try:
+            mariana_response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system",
+                     "content": character_role("mariana")},
+                    {"role": "user",
+                     "content": news_information},
+                    {"role": "user",
+                     "content": prompt_to_answer},
+                    {"role": "assistant", "content": ""}
+                ]
+            )
+
+            responses.append({
+                "name": "mariana",
+                "message": mariana_response.choices[0].message.content
+            })
+        except OpenAIError as e:
+            return HttpResponseBadRequest(f'Error creating completion for Mariana: {str(e)}')
+        except Exception as e:
+            return HttpResponseBadRequest(f'Unexpected error creating completion for Mariana: {str(e)}')
 
     return JsonResponse(responses, safe=False)
-
-
-def thread_chat_completion_view(request):
-    rag_information = request.GET.get('rag_information')
-    client_message = request.GET.get('client_message')
-    chat_completion_character_name = request.GET.get('chat_completion_character_name')
-
-    client = OpenAI()
-
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system",
-                 "content": character_role(chat_completion_character_name)},
-                {"role": "user",
-                 "content": rag_information},
-                {"role": "user",
-                 "content": client_message},
-                {"role": "assistant", "content": ""}
-            ]
-        )
-
-    except OpenAIError as e:
-        return HttpResponseBadRequest(f'Error creating completion for Lucía: {str(e)}')
-    except Exception as e:
-        return HttpResponseBadRequest(f'Unexpected error creating completion for Lucía: {str(e)}')
-
-    return JsonResponse({
-        "name": chat_completion_character_name,
-        "message": response.choices[0].message.content
-    })
 
 
 def character_system_role_view(request):
@@ -261,3 +280,37 @@ def character_role(name):
                 "llegar a ser un poco abrumadora por tu necesidad de explicarlo todo al detalle. Te "
                 "expresás de manera breve y concisa, como si"
                 "estuvieras escribiendo un hilo de Twitter.")
+
+
+def define_which_character_to_respond(prompt_to_answer):
+    client = OpenAI()
+
+    lucia_personality = "Lucia es sarcastica, cinica, directa y picara."
+    mateo_personality = "Mateo es muy positivo, comico, optimista, Alegre y bromista."
+    mariana_personality = "Mariana es analitica, racional, logica, detallista y se basa en hechos concretos."
+
+    filter_character_response = lucia_personality + mateo_personality + mariana_personality + (
+        "basandote en estas personalidades, "
+        "responde unicamente con los "
+        "nombres de los "
+        "personajes que "
+        "responderian a"
+        "este mensaje: ") + prompt_to_answer
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system",
+                 "content": "You are a helpful assistant. Answer all questions to the best of your ability."},
+                {"role": "user",
+                 "content": filter_character_response},
+                {"role": "assistant", "content": ""}
+            ]
+        )
+
+    except OpenAIError as e:
+        return HttpResponseBadRequest(f'Error creating completion for Lucía: {str(e)}')
+    except Exception as e:
+        return HttpResponseBadRequest(f'Unexpected error creating completion for Lucía: {str(e)}')
+    return response.choices[0].message.content
