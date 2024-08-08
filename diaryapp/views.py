@@ -90,7 +90,7 @@ def rag_view(request):
         return HttpResponseBadRequest(f'Error creating RAG chain: {str(e)}')
 
     try:
-        rag_chain_response = rag_chain.invoke("Puedes darme la inforamcion principal y datos que encuentres?")
+        rag_chain_response = rag_chain.invoke("Resume la inforamcion principal y datos que encuentres")
     except Exception as e:
         return HttpResponseBadRequest(f'Error invoking RAG chain: {str(e)}')
 
@@ -164,6 +164,40 @@ def chat_completion_view(request):
         return HttpResponseBadRequest(f'Error creating completion for Mateo: {str(e)}')
     except Exception as e:
         return HttpResponseBadRequest(f'Unexpected error creating completion for Mateo: {str(e)}')
+
+    return JsonResponse(responses, safe=False)
+
+
+def chat_responses_view(request):
+    news_information = request.GET.get('news_information')
+    prompt_to_answer = request.GET.get('prompt_to_answer')
+
+    client = OpenAI()
+
+    responses = []
+
+    try:
+        lucia_response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system",
+                 "content": character_role("lucia")},
+                {"role": "user",
+                 "content": news_information},
+                {"role": "user",
+                 "content": prompt_to_answer},
+                {"role": "assistant", "content": ""}
+            ]
+        )
+
+        responses.append({
+            "name": "lucia",
+            "message": lucia_response.choices[0].message.content
+        })
+    except OpenAIError as e:
+        return HttpResponseBadRequest(f'Error creating completion for Lucía: {str(e)}')
+    except Exception as e:
+        return HttpResponseBadRequest(f'Unexpected error creating completion for Lucía: {str(e)}')
 
     return JsonResponse(responses, safe=False)
 
