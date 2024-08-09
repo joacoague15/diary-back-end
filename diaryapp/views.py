@@ -90,7 +90,7 @@ def rag_view(request):
         return HttpResponseBadRequest(f'Error creating RAG chain: {str(e)}')
 
     try:
-        rag_chain_response = rag_chain.invoke("Resume la inforamcion principal y datos que encuentres")
+        rag_chain_response = rag_chain.invoke("Resume la inforamacion principal y datos que encuentres de este texto")
     except Exception as e:
         return HttpResponseBadRequest(f'Error invoking RAG chain: {str(e)}')
 
